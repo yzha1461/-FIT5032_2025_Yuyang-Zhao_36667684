@@ -1,0 +1,98 @@
+FIT5032 Lab 4 截图说明
+
+项目目录：
+C:\5032_week\fit5032_week4
+
+运行方式：
+1. 在 PowerShell 进入项目目录：
+   cd C:\5032_week\fit5032_week4
+2. 启动项目：
+   npm run dev
+3. 浏览器打开终端显示的 Local 地址，例如：
+   http://localhost:5173/
+
+Activity 1 截图：
+截图位置：浏览器页面。
+截图内容：User Information Form 初始页面，能看到 Username、Password、Australian Resident、Gender、Reason For Joining、Submit、Clear。
+操作方式：直接打开页面后截图。
+
+Activity 2 截图（HTML 内置表单验证）：
+先临时切换组件：
+打开 src\App.vue，把第 8 行：
+import Form from './components/Form.vue'
+改成：
+import Form from './components/FormActivity2.vue'
+
+截图 2A：
+截图位置：浏览器页面。
+操作方式：所有输入框保持空白，直接点 Submit。
+截图内容：浏览器自带 required 提示，例如 Username 输入框附近出现 Please fill out this field。
+
+截图 2B：
+截图位置：浏览器页面。
+操作方式：Username 输入任意 3 个以上字符，例如 Amy；Password 输入 123；其他 required 项可以先填好，然后点 Submit。
+截图内容：Password 输入框附近出现 minlength 的浏览器内置提示，证明 minlength="4" 生效。
+
+Activity 2 截完后改回最终版本：
+打开 src\App.vue，把第 8 行改回：
+import Form from './components/Form.vue'
+
+Activity 3 截图（Vue JavaScript 验证）：
+截图位置：浏览器页面。
+操作方式：Username 输入 ab，然后点击 Password 输入框或空白处。
+截图内容：Username 下方出现红色错误提示 Name must be at least 3 characters。
+
+Task 4.2 截图 1（5 个验证规则同时展示）：
+截图位置：浏览器页面。
+操作方式：保持表单为空，直接点 Submit。
+截图内容：页面显示 5 个 Vue 验证错误：
+Name must be at least 3 characters
+Password must be at least 8 characters and include uppercase, lowercase, number and special character
+Please confirm that you are an Australian resident
+Please select a gender
+Reason must be at least 10 characters
+
+Task 4.2 截图 2（DataTable 展示提交数据）：
+截图位置：浏览器页面。
+操作方式：填写一组有效数据，例如：
+Username: yuyang
+Password: Aa123456!
+Australian Resident: 勾选
+Gender: Male 或 Female
+Reason For Joining: I want to join this library.
+然后点击 Submit。
+截图内容：页面下方出现 Submitted User Information 表格，表格里显示 Username、Password、Australian Resident、Gender、Reason for Joining，并能看到 PrimeVue DataTable 的分页或表格样式。
+
+代码截图 1（表单绑定和错误显示）：
+截图文件：src\components\Form.vue
+建议截图行号：10-24、26-39、41-89。
+截图内容：novalidate、v-model、:class、@blur、@input、错误提示 v-if。
+
+代码截图 2（PrimeVue DataTable）：
+截图文件：src\components\Form.vue
+建议截图行号：99-124。
+截图内容：DataTable、Column、sortable、paginator、PrimeVue 组件 import。
+
+代码截图 3（5 个 Vue 验证规则）：
+截图文件：src\components\Form.vue
+建议截图行号：134-199。
+截图内容：emptyErrors、validateName、validatePassword、validateResident、validateGender、validateReason、validateForm。
+
+代码截图 4（提交到 DataTable）：
+截图文件：src\components\Form.vue
+建议截图行号：201-214。
+截图内容：submitForm 通过验证后 push 到 submittedUsers，并 clearForm。
+
+代码截图 5（PrimeVue 配置）：
+截图文件：src\main.js
+建议截图行号：1-16。
+截图内容：PrimeVue、Aura theme、app.use(PrimeVue)。
+
+GitHub 截图：
+截图位置：GitHub 仓库网页。
+截图内容：仓库 commit history 页面，能看到 Lab 4 相关 commit，例如 Complete Lab 4 eFolio task，并显示已成功 push。
+
+注意：
+Activity 2 使用 FormActivity2.vue；Activity 3 和 Task 4.2 使用 Form.vue。
+最终提交代码时，应保持 src\App.vue 第 8 行为：
+import Form from './components/Form.vue'
