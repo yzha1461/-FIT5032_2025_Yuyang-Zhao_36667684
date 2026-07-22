@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="760" height="560" viewBox="0 0 760 560" role="img" aria-label="A support worker helping an elderly person review appointments on a tablet">
+  <rect width="760" height="560" fill="#FBFDFE"/>
+  <rect x="70" y="72" width="620" height="416" rx="22" fill="#E6F4F1" stroke="#2B7A78" stroke-width="4"/>
+  <rect x="410" y="160" width="180" height="230" rx="16" fill="#FFFFFF" stroke="#9BB9BD" stroke-width="4"/>
+  <rect x="435" y="198" width="130" height="24" rx="6" fill="#2B7A78"/>
+  <rect x="435" y="244" width="130" height="20" rx="6" fill="#D8E2E7"/>
+  <rect x="435" y="284" width="100" height="20" rx="6" fill="#D8E2E7"/>
+  <rect x="435" y="324" width="116" height="20" rx="6" fill="#F4A261"/>
+  <circle cx="232" cy="206" r="54" fill="#F4C28E"/>
+  <path d="M188 192c18-42 74-42 92 0v-32c0-36-92-36-92 0z" fill="#FFFFFF"/>
+  <path d="M162 432c13-88 37-132 70-132s57 44 70 132" fill="#2B7A78"/>
+  <circle cx="338" cy="210" r="42" fill="#C98D66"/>
+  <path d="M302 204c12-54 84-48 76 8-22-20-48-20-76-8z" fill="#102A43"/>
+  <path d="M286 432c8-82 28-124 56-124s48 42 56 124" fill="#FFFFFF" stroke="#9BB9BD" stroke-width="4"/>
+  <path d="M300 338c34 38 72 38 108 0" fill="none" stroke="#2B7A78" stroke-width="8" stroke-linecap="round"/>
+  <path d="M260 292c34 24 72 22 110-4" fill="none" stroke="#FFFFFF" stroke-width="10" stroke-linecap="round"/>
+  <rect x="160" y="422" width="420" height="28" rx="14" fill="#FFFFFF" stroke="#9BB9BD" stroke-width="3"/>
+  <circle cx="630" cy="110" r="28" fill="#FFF8EF" stroke="#F4A261" stroke-width="4"/>
+  <path d="M618 110h24M630 98v24" stroke="#F4A261" stroke-width="5" stroke-linecap="round"/>
+</svg>
