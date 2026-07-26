@@ -9,6 +9,7 @@ import {
   Menu,
   Phone,
   ShieldCheck,
+  Star,
   UserRound,
   UsersRound,
   X,
@@ -17,7 +18,9 @@ import {
 const STORAGE = {
   users: 'silvercare_users_v2',
   bookings: 'silvercare_bookings_v2',
+  ratings: 'silvercare_ratings_v2',
   session: 'silvercare_session_v2',
+  loginAttempts: 'silvercare_login_attempts_v2',
 }
 
 const services = [
@@ -33,16 +36,30 @@ const view = ref('login')
 const session = ref(null)
 const users = ref([])
 const bookings = ref([])
+const ratings = ref([])
 const authError = ref('')
 const authMessage = ref('')
 const bookingErrors = ref({})
 const bookingMessage = ref('')
+const ratingMessage = ref('')
 
 const loginForm = reactive({ email: '', password: '' })
 const registerForm = reactive({ name: '', email: '', password: '', confirmPassword: '' })
 const bookingForm = reactive({ serviceId: 'health-check', date: '', phone: '', notes: '' })
+const ratingSelection = reactive(Object.fromEntries(services.map((service) => [service.id, 0])))
 
 const memberBookings = computed(() => bookings.value.filter((booking) => booking.userId === session.value?.id))
+
+function averageFor(serviceId) {
+  const serviceRatings = ratings.value.filter((rating) => rating.serviceId === serviceId)
+  if (!serviceRatings.length) return 'No ratings'
+  const average = serviceRatings.reduce((total, rating) => total + rating.score, 0) / serviceRatings.length
+  return `${average.toFixed(1)} / 5`
+}
+
+function ratingCount(serviceId) {
+  return ratings.value.filter((rating) => rating.serviceId === serviceId).length
+}
 
 function readStorage(key, fallback) {
   try {
@@ -56,6 +73,7 @@ function readStorage(key, fallback) {
 function persist() {
   localStorage.setItem(STORAGE.users, JSON.stringify(users.value))
   localStorage.setItem(STORAGE.bookings, JSON.stringify(bookings.value))
+  localStorage.setItem(STORAGE.ratings, JSON.stringify(ratings.value))
 }
 
 async function hashPassword(password, salt) {
@@ -72,6 +90,7 @@ async function makeUser(profile, password) {
 async function initialiseData() {
   users.value = readStorage(STORAGE.users, [])
   bookings.value = readStorage(STORAGE.bookings, [])
+  ratings.value = readStorage(STORAGE.ratings, [])
 
   if (!users.value.length) {
     users.value = [
@@ -104,10 +123,37 @@ function validPassword(password) {
   return password.length >= 10 && /[a-z]/.test(password) && /[A-Z]/.test(password) && /\d/.test(password) && /[^A-Za-z0-9]/.test(password)
 }
 
+function containsMarkup(value) {
+  return /[<>]/.test(value)
+}
+
+function loginAttemptState() {
+  try {
+    return JSON.parse(sessionStorage.getItem(STORAGE.loginAttempts)) || { count: 0, lockedUntil: 0 }
+  } catch {
+    return { count: 0, lockedUntil: 0 }
+  }
+}
+
+function recordFailedLogin() {
+  const state = loginAttemptState()
+  state.count += 1
+  if (state.count >= 5) {
+    state.lockedUntil = Date.now() + 30_000
+    state.count = 0
+  }
+  sessionStorage.setItem(STORAGE.loginAttempts, JSON.stringify(state))
+}
+
 async function login() {
   authError.value = ''
   authMessage.value = ''
   const email = loginForm.email.trim().toLowerCase()
+  const attempts = loginAttemptState()
+  if (attempts.lockedUntil > Date.now()) {
+    authError.value = 'Too many unsuccessful attempts. Wait 30 seconds before trying again.'
+    return
+  }
   if (!validEmail(email) || !loginForm.password) {
     authError.value = 'Enter a valid email address and password.'
     return
@@ -115,11 +161,13 @@ async function login() {
 
   const user = users.value.find((candidate) => candidate.email === email)
   if (!user || user.passwordHash !== await hashPassword(loginForm.password, user.salt)) {
+    recordFailedLogin()
     authError.value = 'The email address or password is incorrect.'
     return
   }
 
   session.value = { id: user.id, name: user.name, email: user.email, role: user.role }
+  sessionStorage.removeItem(STORAGE.loginAttempts)
   sessionStorage.setItem(STORAGE.session, JSON.stringify(session.value))
   loginForm.password = ''
   navigate('dashboard')
@@ -133,6 +181,10 @@ async function register() {
 
   if (name.length < 2 || name.length > 60) {
     authError.value = 'Name must contain between 2 and 60 characters.'
+    return
+  }
+  if (containsMarkup(name)) {
+    authError.value = 'Name cannot contain angle brackets.'
     return
   }
   if (!validEmail(email)) {
@@ -185,6 +237,7 @@ function validateBooking() {
   else if (Number.isNaN(selectedDate.getTime()) || selectedDate < tomorrow) errors.date = 'Choose a date from tomorrow onwards.'
   if (!/^(?:\+?61|0)[2-478](?:[ -]?\d){8}$/.test(bookingForm.phone.trim())) errors.phone = 'Enter a valid Australian phone number.'
   if (bookingForm.notes.length > 300) errors.notes = 'Notes must be 300 characters or fewer.'
+  else if (containsMarkup(bookingForm.notes)) errors.notes = 'Notes cannot contain HTML markup.'
 
   bookingErrors.value = errors
   return Object.keys(errors).length === 0
@@ -217,6 +270,21 @@ function updateStatus(booking, status) {
   if (session.value?.role !== 'staff') return
   booking.status = status
   persist()
+}
+
+function submitRating(serviceId) {
+  ratingMessage.value = ''
+  const score = Number(ratingSelection[serviceId])
+  if (!Number.isInteger(score) || score < 1 || score > 5) {
+    ratingMessage.value = 'Choose between one and five stars before submitting.'
+    return
+  }
+
+  const existing = ratings.value.find((rating) => rating.serviceId === serviceId && rating.userId === session.value.id)
+  if (existing) existing.score = score
+  else ratings.value.push({ id: crypto.randomUUID(), serviceId, userId: session.value.id, score })
+  persist()
+  ratingMessage.value = 'Thank you. The service average has been updated.'
 }
 
 onMounted(initialiseData)
@@ -326,6 +394,29 @@ onMounted(initialiseData)
           </div>
           <div v-else class="empty-state"><ClipboardList /><h3>No requests yet</h3><p>Book a service when you need practical support.</p></div>
         </section>
+
+        <section class="data-section" aria-labelledby="ratings-title">
+          <div class="section-heading">
+            <div><p class="eyebrow">Community feedback</p><h2 id="ratings-title">Rate a support service</h2></div>
+          </div>
+          <div v-if="ratingMessage" class="alert success" role="status">{{ ratingMessage }}</div>
+          <div class="rating-grid">
+            <article v-for="service in services" :key="service.id">
+              <div>
+                <h3>{{ service.title }}</h3>
+                <p><strong>{{ averageFor(service.id) }}</strong> - {{ ratingCount(service.id) }} community {{ ratingCount(service.id) === 1 ? 'rating' : 'ratings' }}</p>
+              </div>
+              <div class="star-control" role="radiogroup" :aria-label="`Rate ${service.title}`">
+                <label v-for="score in 5" :key="score" :title="`${score} stars`">
+                  <input v-model="ratingSelection[service.id]" type="radio" :name="`rating-${service.id}`" :value="score">
+                  <Star :size="22" :fill="ratingSelection[service.id] >= score ? 'currentColor' : 'none'" />
+                  <span class="sr-only">{{ score }} stars</span>
+                </label>
+              </div>
+              <button class="secondary-button" type="button" @click="submitRating(service.id)">Submit rating</button>
+            </article>
+          </div>
+        </section>
       </section>
 
       <section v-else-if="view === 'book' && session.role === 'member'" class="content-section narrow-section">
@@ -375,6 +466,16 @@ onMounted(initialiseData)
           <article><span>Total requests</span><strong>{{ bookings.length }}</strong></article>
           <article><span>Pending</span><strong>{{ bookings.filter((item) => item.status === 'Pending').length }}</strong></article>
         </div>
+        <section class="service-performance" aria-labelledby="performance-title">
+          <h2 id="performance-title">Service ratings</h2>
+          <div>
+            <article v-for="service in services" :key="service.id">
+              <span>{{ service.title }}</span>
+              <strong><Star :size="18" fill="currentColor" /> {{ averageFor(service.id) }}</strong>
+              <small>{{ ratingCount(service.id) }} ratings</small>
+            </article>
+          </div>
+        </section>
         <section class="data-section">
           <h2>Request queue</h2>
           <div v-if="bookings.length" class="table-wrap">
