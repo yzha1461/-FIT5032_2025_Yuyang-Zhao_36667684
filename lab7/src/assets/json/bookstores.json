@@ -1,0 +1,36 @@
+[
+  {
+    "id": 1,
+    "name": "City Lights Books",
+    "location": "San Francisco",
+    "open": true,
+    "featured": true,
+    "books": [
+      { "title": "1984", "author": "George Orwell", "inStock": true },
+      { "title": "Animal Farm", "author": "George Orwell", "inStock": true },
+      { "title": "Pride and Prejudice", "author": "Jane Austen", "inStock": false }
+    ]
+  },
+  {
+    "id": 2,
+    "name": "Readings Carlton",
+    "location": "Melbourne",
+    "open": true,
+    "featured": false,
+    "books": [
+      { "title": "Murder on the Orient Express", "author": "Agatha Christie", "inStock": true },
+      { "title": "Death on the Nile", "author": "Agatha Christie", "inStock": true }
+    ]
+  },
+  {
+    "id": 3,
+    "name": "The Strand",
+    "location": "New York",
+    "open": false,
+    "featured": true,
+    "books": [
+      { "title": "Sense and Sensibility", "author": "Jane Austen", "inStock": true },
+      { "title": "1984", "author": "George Orwell", "inStock": false }
+    ]
+  }
+]
