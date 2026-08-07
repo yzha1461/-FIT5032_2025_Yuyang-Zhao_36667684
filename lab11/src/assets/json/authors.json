@@ -1,0 +1,35 @@
+[
+  {
+    "id": 1,
+    "name": "Jane Austen",
+    "birthYear": 1775,
+    "nationality": "British",
+    "genre": "Romance",
+    "famousWorks": [
+      { "title": "Pride and Prejudice", "year": 1813 },
+      { "title": "Sense and Sensibility", "year": 1811 }
+    ]
+  },
+  {
+    "id": 2,
+    "name": "George Orwell",
+    "birthYear": 1903,
+    "nationality": "British",
+    "genre": "Dystopian fiction",
+    "famousWorks": [
+      { "title": "1984", "year": 1949 },
+      { "title": "Animal Farm", "year": 1945 }
+    ]
+  },
+  {
+    "id": 3,
+    "name": "Agatha Christie",
+    "birthYear": 1890,
+    "nationality": "British",
+    "genre": "Mystery",
+    "famousWorks": [
+      { "title": "Murder on the Orient Express", "year": 1934 },
+      { "title": "Death on the Nile", "year": 1937 }
+    ]
+  }
+]

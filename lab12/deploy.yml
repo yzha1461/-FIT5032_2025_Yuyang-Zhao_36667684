@@ -1,0 +1,48 @@
+name: Build and deploy Lab 11
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - lab11/**
+      - .github/workflows/deploy-lab11.yml
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: lab11
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: lab11/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build
+        run: npm run build
+        env:
+          VITE_BASE_PATH: /${{ github.event.repository.name }}/
+          VITE_OPENWEATHER_API_KEY: ${{ secrets.OPENWEATHER_API_KEY }}
+
+      - name: Prepare GitHub Pages fallback
+        run: cp dist/index.html dist/404.html
+
+      - name: Deploy
+        uses: JamesIves/github-pages-deploy-action@4.1.4
+        with:
+          branch: gh-pages
+          folder: lab11/dist
