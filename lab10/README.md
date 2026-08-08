@@ -22,4 +22,3 @@ npm install
 npm run dev
 ```
 
-Copy `.env.example` to `.env.local` and add a personal OpenWeather key for the OpenWeather API path. The key must not be committed to GitHub.
