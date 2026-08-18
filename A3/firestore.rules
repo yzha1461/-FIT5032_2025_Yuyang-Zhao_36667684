@@ -1,0 +1,11 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /supportRequests/{requestId} {
+      allow read: if request.auth != null && (request.auth.token.role == 'staff' || resource.data.userId == request.auth.uid);
+      allow create: if request.auth != null && request.auth.token.role == 'member' && request.resource.data.userId == request.auth.uid;
+      allow update: if request.auth != null && request.auth.token.role == 'staff';
+      allow delete: if false;
+    }
+  }
+}

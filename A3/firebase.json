@@ -1,0 +1,4 @@
+{
+  "functions": { "source": "functions" },
+  "hosting": { "public": "dist", "ignore": ["firebase.json", "**/.*", "**/node_modules/**"], "rewrites": [{ "source": "/api/health", "function": "apiHealth" }, { "source": "/api/stats", "function": "apiStats" }, { "source": "/api/email/send", "function": "apiSendEmail" }] }
+}
