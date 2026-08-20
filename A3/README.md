@@ -1,6 +1,6 @@
-# SilverCare Connect A3 - foundation snapshot
+# SilverCare Connect A3 - advanced integration snapshot
 
-This first cumulative snapshot starts the A3 upgrade from A2. It establishes the split Vue architecture, Firebase-compatible authentication adapter, signed server sessions, server-side role checks, REST API boundaries and deployment configuration. Later snapshots refine and demonstrate the D/E/F surfaces.
+This second cumulative snapshot extends the foundation with the D/E integration surfaces: external-auth adapter wiring, validated email attachments, reusable searchable tables, Leaflet map search and route summaries, export helpers, and Firebase deployment configuration.
 
 ## Run locally
 
