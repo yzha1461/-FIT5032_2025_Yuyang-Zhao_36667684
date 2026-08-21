@@ -1,7 +1,7 @@
 {
   "name": "silvercare-connect-a3",
   "private": true,
-  "version": "3.0.2-advanced",
+  "version": "3.0.3-final",
   "type": "module",
   "scripts": {
     "dev": "concurrently \"vite\" \"node server/index.js\"",

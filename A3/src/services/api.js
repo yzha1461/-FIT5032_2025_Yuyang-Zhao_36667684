@@ -12,7 +12,8 @@ export function getToken() { return authToken }
 export async function api(path, options = {}) {
   const headers = new Headers(options.headers || {})
   if (options.body && !headers.has('Content-Type')) headers.set('Content-Type', 'application/json')
-  if (authToken) headers.set('Authorization', `Bearer ${authToken}`)
+  const currentToken = authToken || sessionStorage.getItem('silvercare_a3_token') || ''
+  if (currentToken) headers.set('Authorization', `Bearer ${currentToken}`)
   const response = await fetch(`${base}${path}`, { ...options, headers })
   const payload = await response.json().catch(() => ({}))
   if (!response.ok) throw new Error(payload.error || `Request failed (${response.status})`)

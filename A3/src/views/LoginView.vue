@@ -21,7 +21,15 @@ async function submit() {
       const result = firebaseResult ? await apiPost('/auth/register', { name: form.name, email: form.email, password: form.password, providerToken: firebaseResult.token }) : await apiPost('/auth/register', { name: form.name, email: form.email, password: form.password })
       setToken(result.token); emit('authenticated', result.user); return
     }
-    const firebaseResult = firebaseEnabled ? await firebaseLogin(form.email, form.password) : null
+    let firebaseResult = null
+    if (firebaseEnabled && !form.email.endsWith('@silvercare.test')) {
+      try {
+        firebaseResult = await firebaseLogin(form.email, form.password)
+      } catch {
+        // Keep the seeded course demonstration accounts available alongside Firebase Auth.
+        firebaseResult = null
+      }
+    }
     const result = firebaseResult ? await apiPost('/auth/login', { email: form.email, providerToken: firebaseResult.token }) : await apiPost('/auth/login', { email: form.email, password: form.password })
     setToken(result.token); emit('authenticated', result.user)
   } catch (cause) { error.value = cause.message } finally { pending.value = false }

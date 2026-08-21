@@ -1,3 +1,3 @@
-# Batch 2 scope
+# Batch 3 scope
 
-This snapshot is the D/E integration stage. It adds the reusable tables, individual-column filters, pagination, map search and route summary, email attachment payload, CSV/PDF export, accessibility control and cloud-function wiring.
+This is the final A3 snapshot. It adds the four selected F.1 innovations: conflict-aware calendar, bulk email, partner REST routes and the interactive admin chart/dashboard.

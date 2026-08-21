@@ -7,7 +7,7 @@ import MapPanel from './components/MapPanel.vue'
 import CalendarPanel from './components/CalendarPanel.vue'
 import EmailComposer from './components/EmailComposer.vue'
 import StatChart from './components/StatChart.vue'
-import { apiGet, apiPatch, setToken } from './services/api'
+import { apiGet, apiPatch, apiPost, setToken } from './services/api'
 import { firebaseLogout } from './services/firebase'
 import { downloadCsv, downloadPdf } from './services/export'
 
@@ -21,6 +21,9 @@ const ratings = ref([])
 const stats = ref({ members: 0, requests: 0, pending: 0, byService: [] })
 const error = ref('')
 const highContrast = ref(false)
+const requestForm = ref({ serviceId: 'health-check', date: '', phone: '', notes: '' })
+const requestMessage = ref('')
+const requestSubmitting = ref(false)
 
 const requestColumns = [
   { key: 'memberName', label: 'Member' }, { key: 'serviceTitle', label: 'Service' }, { key: 'date', label: 'Date' }, { key: 'phone', label: 'Phone' }, { key: 'status', label: 'Status' },
@@ -44,6 +47,15 @@ async function authenticated(profile) { user.value = profile; activeView.value =
 async function logout() { await firebaseLogout(); setToken(''); user.value = null; activeView.value = 'dashboard' }
 function navigate(view) { activeView.value = view; menuOpen.value = false }
 function ratingFor(serviceId) { const values = ratings.value.filter((rating) => rating.serviceId === serviceId); return values.length ? (values.reduce((sum, item) => sum + item.score, 0) / values.length).toFixed(1) : 'No ratings' }
+async function submitRequest() {
+  requestSubmitting.value = true; requestMessage.value = ''
+  try {
+    await apiPost('/requests', requestForm.value)
+    requestMessage.value = 'Support request submitted successfully.'
+    requestForm.value = { serviceId: 'health-check', date: '', phone: '', notes: '' }
+    await loadData()
+  } catch (cause) { requestMessage.value = cause.message } finally { requestSubmitting.value = false }
+}
 
 async function updateStatus(row, event) { try { await apiPatch(`/requests/${row.id}`, { status: event.target.value }); row.status = event.target.value; stats.value.pending = requests.value.filter((item) => item.status === 'Pending').length } catch (cause) { error.value = cause.message } }
 function exportRequests(format) { format === 'csv' ? downloadCsv(requests.value, requestColumns, 'silvercare-requests.csv') : downloadPdf(requests.value, requestColumns, 'SilverCare requests', 'silvercare-requests.pdf') }
@@ -60,7 +72,7 @@ onMounted(async () => { highContrast.value = localStorage.getItem('silvercare_hi
 
     <main id="main-content" class="app-main">
       <div v-if="error" class="alert error page-alert" role="alert">{{ error }}</div>
-      <section v-if="activeView === 'dashboard' && user.role === 'member'" class="content-section"><div class="page-heading"><div><p class="eyebrow">Member support hub</p><h1>Good morning, {{ user.name.split(' ')[0] }}.</h1><p class="lead">Your support requests, service feedback and nearby care options.</p></div><span class="role-badge"><ShieldCheck :size="17" /> Server-verified member</span></div><div class="summary-grid"><article><span>Open requests</span><strong>{{ requests.filter((item) => item.status !== 'Completed').length }}</strong><p>Requests coordinated by the SilverCare team.</p></article><article><span>Service ratings</span><strong>{{ ratings.length }}</strong><p>Your feedback helps improve local support.</p></article></div><DataTable title="My support requests" :rows="requests" :columns="requestColumns" /><section class="feedback-strip"><h2>Community averages</h2><div><span v-for="service in memberAverages" :key="service.id">{{ service.label }}: <strong>{{ service.average ? service.average.toFixed(1) : 'No ratings' }}</strong></span></div></section></section>
+      <section v-if="activeView === 'dashboard' && user.role === 'member'" class="content-section"><div class="page-heading"><div><p class="eyebrow">Member support hub</p><h1>Good morning, {{ user.name.split(' ')[0] }}.</h1><p class="lead">Your support requests, service feedback and nearby care options.</p></div><span class="role-badge"><ShieldCheck :size="17" /> Server-verified member</span></div><div class="summary-grid"><article><span>Open requests</span><strong>{{ requests.filter((item) => item.status !== 'Completed').length }}</strong><p>Requests coordinated by the SilverCare team.</p></article><article><span>Service ratings</span><strong>{{ ratings.length }}</strong><p>Your feedback helps improve local support.</p></article></div><section class="request-form-card" aria-labelledby="request-form-title"><div class="section-heading"><div><p class="eyebrow">Member service request</p><h2 id="request-form-title">Request community support</h2></div></div><p class="muted-copy">Choose a service and preferred date. Staff will review your request before confirmation.</p><form class="request-form" @submit.prevent="submitRequest"><label>Service<select v-model="requestForm.serviceId" required><option v-for="service in serviceLabels" :key="service.id" :value="service.id">{{ service.label }}</option></select></label><label>Preferred date<input v-model="requestForm.date" type="date" required></label><label>Phone<input v-model="requestForm.phone" type="tel" placeholder="0400 123 456" required></label><label>Notes (optional)<textarea v-model="requestForm.notes" rows="3" maxlength="300" placeholder="Tell us anything the team should know"></textarea></label><button class="primary-button" type="submit" :disabled="requestSubmitting">{{ requestSubmitting ? 'Submitting...' : 'Submit support request' }}</button></form><p v-if="requestMessage" class="alert" :class="requestMessage.includes('successfully') ? 'success' : 'error'" role="status">{{ requestMessage }}</p></section><DataTable title="My support requests" :rows="requests" :columns="requestColumns" /><section class="feedback-strip"><h2>Community averages</h2><div><span v-for="service in memberAverages" :key="service.id">{{ service.label }}: <strong>{{ service.average ? service.average.toFixed(1) : 'No ratings' }}</strong></span></div></section></section>
       <section v-else-if="activeView === 'map' && user.role === 'member'" class="content-section"><MapPanel /></section>
 
       <section v-else-if="activeView === 'admin' && user.role === 'staff'" class="content-section"><div class="page-heading"><div><p class="eyebrow">E.1 / F.1 innovation</p><h1>Admin dashboard</h1><p class="lead">Server-verified operational insight for the charity team.</p></div><span class="role-badge"><ShieldCheck :size="17" /> Staff-only route</span></div><div class="summary-grid three"><article><span>Registered members</span><strong>{{ stats.members }}</strong></article><article><span>Total requests</span><strong>{{ stats.requests }}</strong></article><article><span>Pending requests</span><strong>{{ stats.pending }}</strong></article></div><section class="chart-card"><div class="section-heading"><div><p class="eyebrow">Interactive chart</p><h2>Average service ratings</h2></div></div><StatChart :values="stats.byService" /></section><div class="export-actions"><button class="secondary-button" type="button" @click="exportRequests('csv')"><Download :size="18" /> Requests CSV</button><button class="secondary-button" type="button" @click="exportRequests('pdf')"><Download :size="18" /> Requests PDF</button><button class="secondary-button" type="button" @click="exportUsers('csv')"><Download :size="18" /> Members CSV</button><button class="secondary-button" type="button" @click="exportUsers('pdf')"><Download :size="18" /> Members PDF</button></div><DataTable title="All support requests" :rows="requests" :columns="requestColumns" /><DataTable title="Registered users" :rows="users" :columns="userColumns" /></section>
